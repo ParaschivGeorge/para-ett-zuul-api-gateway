@@ -1,5 +1,5 @@
 package com.paraett.zuulapigateway.model.enums;
 
 public enum UserType {
-    ADMIN, MANAGER, HR, EMPLOYEE;
+    ADMIN, MANAGER, HR, EMPLOYEE, OWNER;
 }

@@ -5,11 +5,10 @@ import com.paraett.zuulapigateway.model.enums.UserType;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Table(name = "user_tbl")
-public class  User {
+public class User {
 
     @Id
     @Column(name = "user_id")
@@ -17,7 +16,10 @@ public class  User {
     private Long id;
 
     @Column(nullable = false, length = 100)
-    private String username;
+    private String firstName;
+
+    @Column(nullable = false, length = 100)
+    private String lastName;
 
     @Column(unique = true, nullable = false, length = 50)
     private String email;
@@ -49,6 +51,9 @@ public class  User {
     @Column(name="manager_id")
     private Long managerId;
 
+    @Column(name="company_id")
+    private Long companyId;
+
     @Column
     private Integer norm;
 
@@ -63,12 +68,20 @@ public class  User {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -135,6 +148,14 @@ public class  User {
         this.managerId = managerId;
     }
 
+    public Long getCompanyId() {
+        return companyId;
+    }
+
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
+
     public Integer getNorm() {
         return norm;
     }
@@ -154,8 +175,9 @@ public class  User {
     public User() {
     }
 
-    public User(String username, String email, UserType type, boolean enabled, String password, Date lastPasswordResetDate, Date lastLoginDate, Date currentLoginDate, Long managerId, Integer norm, Double salary) {
-        this.username = username;
+    public User(String firstName, String lastName, String email, UserType type, boolean enabled, String password, Date lastPasswordResetDate, Date lastLoginDate, Date currentLoginDate, Long managerId, Long companyId, Integer norm, Double salary) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
         this.type = type;
         this.enabled = enabled;
@@ -164,6 +186,7 @@ public class  User {
         this.lastLoginDate = lastLoginDate;
         this.currentLoginDate = currentLoginDate;
         this.managerId = managerId;
+        this.companyId = companyId;
         this.norm = norm;
         this.salary = salary;
     }
