@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
 
+/* This authenticates the user to the downstream services */
 public class BasicAuthFilter extends ZuulFilter {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
