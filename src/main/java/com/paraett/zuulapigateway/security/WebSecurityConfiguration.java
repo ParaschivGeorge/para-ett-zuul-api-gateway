@@ -4,11 +4,13 @@ import com.paraett.zuulapigateway.model.enums.UserType;
 import com.paraett.zuulapigateway.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +22,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+@Configuration
+@EnableWebSecurity
 public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     private JwtAuthenticationEntryPoint unauthorizedHandler;
@@ -75,18 +79,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET,"/dummy").authenticated()
-                .antMatchers(HttpMethod.POST,"/login").permitAll()
-                .antMatchers(HttpMethod.POST,"/register").permitAll()
-                .antMatchers(HttpMethod.POST,"/recommend").hasAuthority(UserType.ADMIN.name())
-
-
-////                 this should be set later, only for testing
-//                    .antMatchers(HttpMethod.GET, "/**").permitAll()
-//                    .antMatchers(HttpMethod.POST, "/**").permitAll()
-//                    .antMatchers(HttpMethod.PUT, "/**").permitAll()
-//                    .antMatchers(HttpMethod.PATCH, "/**").permitAll()
-//                    .antMatchers(HttpMethod.DELETE, "/**").permitAll()
+                .anyRequest().authenticated()
                 .and()
                 .logout().permitAll();
 
@@ -107,11 +100,22 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         // AuthenticationTokenFilter will ignore the below paths
         web
                 .ignoring()
-                .antMatchers(
-                        HttpMethod.POST,
+                .antMatchers(HttpMethod.POST,
                         "/login",
-                        "/register"
-                );
+                        "/users-service/users/massRegister",
+                        "/users-service/users/registerOwner"
+                        )
+                .antMatchers(HttpMethod.PUT,
+                        "/users-service/users/activateAccount")
+                .antMatchers(HttpMethod.GET,
+                        "/favicon.ico",
+                        "/**/v2/api-docs",
+                        "/**/configuration/ui",
+                        "/**/swagger-resources",
+                        "/**/configuration/security",
+                        "/**/swagger-ui.html",
+                        "/**/webjars/**",
+                        "/**/actuator/**");
     }
 
 }
