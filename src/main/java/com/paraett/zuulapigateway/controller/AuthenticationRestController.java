@@ -1,5 +1,6 @@
 package com.paraett.zuulapigateway.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.paraett.zuulapigateway.exception.AuthenticationException;
 import com.paraett.zuulapigateway.model.dtos.JwtAuthenticationRequest;
 import com.paraett.zuulapigateway.model.dtos.JwtAuthenticationResponse;
@@ -17,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.Objects;
 
 @RestController
@@ -36,7 +38,7 @@ public class AuthenticationRestController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest) throws AuthenticationException {
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest) throws AuthenticationException, JsonProcessingException {
 
         authenticate(authenticationRequest.getEmail(), authenticationRequest.getPassword());
 
@@ -49,7 +51,7 @@ public class AuthenticationRestController {
     }
 
     @GetMapping("/refresh")
-    public ResponseEntity<?> refreshAndGetAuthenticationToken(HttpServletRequest request) {
+    public ResponseEntity<?> refreshAndGetAuthenticationToken(HttpServletRequest request) throws IOException {
         String authToken = request.getHeader(tokenHeader);
         final String token = authToken.substring(7);
         String username = jwtTokenUtil.getUsernameFromToken(token);

@@ -1,5 +1,7 @@
 package com.paraett.zuulapigateway.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paraett.zuulapigateway.model.dtos.JwtUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Clock;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,8 +29,14 @@ public class JwtTokenUtil implements Serializable {
     private static final long serialVersionUID = -3301605591108950415L;
     private Clock clock = DefaultClock.INSTANCE;
 
-    public String getUsernameFromToken(String token) {
-        return getClaimFromToken(token, Claims::getSubject);
+    public String getUsernameFromToken(String token) throws IOException {
+        // TODO: refactor this
+        ObjectMapper mapper = new ObjectMapper();
+        String subject = getClaimFromToken(token, Claims::getSubject);
+        JwtUser userDetails = mapper.readValue(subject, JwtUser.class);
+        return userDetails.getUsername();
+
+//        return getClaimFromToken(token, Claims::getSubject);
     }
 
     public Date getIssuedAtDateFromToken(String token) {
@@ -64,9 +73,11 @@ public class JwtTokenUtil implements Serializable {
         return false;
     }
 
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(UserDetails userDetails) throws JsonProcessingException {
         Map<String, Object> claims = new HashMap<>();
-        return doGenerateToken(claims, userDetails.getUsername());
+        ObjectMapper mapper = new ObjectMapper();
+
+        return doGenerateToken(claims, mapper.writeValueAsString(userDetails));
     }
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {
@@ -102,7 +113,7 @@ public class JwtTokenUtil implements Serializable {
                 .compact();
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
+    public Boolean validateToken(String token, UserDetails userDetails) throws IOException {
         JwtUser user = (JwtUser) userDetails;
         final String username = getUsernameFromToken(token);
         final Date created = getIssuedAtDateFromToken(token);

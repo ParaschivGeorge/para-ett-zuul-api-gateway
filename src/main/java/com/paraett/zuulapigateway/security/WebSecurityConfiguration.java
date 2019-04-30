@@ -110,6 +110,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.GET,
                         "/favicon.ico",
                         "/**/v2/api-docs",
+                        "/**/csrf",
                         "/**/configuration/ui",
                         "/**/swagger-resources",
                         "/**/configuration/security",

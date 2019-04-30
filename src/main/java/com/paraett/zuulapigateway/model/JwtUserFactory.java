@@ -1,5 +1,6 @@
 package com.paraett.zuulapigateway.model;
 
+import com.paraett.zuulapigateway.model.dtos.JwtGrantedAuthority;
 import com.paraett.zuulapigateway.model.dtos.JwtUser;
 import com.paraett.zuulapigateway.model.entities.User;
 import com.paraett.zuulapigateway.model.enums.UserType;
@@ -26,9 +27,9 @@ public final class JwtUserFactory {
         );
     }
 
-    private static List<GrantedAuthority> mapToGrantedAuthorities(UserType type) {
-        ArrayList<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-        authorities.add(new SimpleGrantedAuthority(type.name()));
+    private static List<JwtGrantedAuthority> mapToGrantedAuthorities(UserType type) {
+        ArrayList<JwtGrantedAuthority> authorities = new ArrayList<JwtGrantedAuthority>();
+        authorities.add(new JwtGrantedAuthority(type.name()));
         return authorities;
     }
 }

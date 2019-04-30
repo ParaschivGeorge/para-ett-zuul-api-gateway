@@ -9,28 +9,59 @@ import java.util.Date;
 
 public class JwtUser implements UserDetails {
 
-    private final Long id;
-    private final String name;
-    private final String password;
-    private final String email;
-    private final Collection<? extends GrantedAuthority> authorities;
-    private final boolean enabled;
-    private final Date lastPasswordResetDate;
+    private Long id;
+    private String name;
+    private String password;
+    private String username;
+    private Collection<JwtGrantedAuthority> authorities;
+    private boolean enabled;
+    private Date lastPasswordResetDate;
 
     public JwtUser(
             Long id,
             String name,
-            String email,
-            String password, Collection<? extends GrantedAuthority> authorities,
+            String username,
+            String password, Collection<JwtGrantedAuthority> authorities,
             boolean enabled,
             Date lastPasswordResetDate
     ) {
         this.id = id;
         this.name = name;
-        this.email = email;
+        this.username = username;
         this.password = password;
         this.authorities = authorities;
         this.enabled = enabled;
+        this.lastPasswordResetDate = lastPasswordResetDate;
+    }
+
+    public JwtUser() {
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setAuthorities(Collection<JwtGrantedAuthority> authorities) {
+        this.authorities = authorities;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void setLastPasswordResetDate(Date lastPasswordResetDate) {
         this.lastPasswordResetDate = lastPasswordResetDate;
     }
 
@@ -41,7 +72,7 @@ public class JwtUser implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     public String getName() {
@@ -73,7 +104,7 @@ public class JwtUser implements UserDetails {
     }
 
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
+    public Collection<JwtGrantedAuthority> getAuthorities() {
         return authorities;
     }
 
