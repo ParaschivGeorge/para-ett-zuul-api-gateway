@@ -107,7 +107,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                         "/login",
                         "/users-service/users/massRegister",
                         "/users-service/users/registerOwner",
-                        "companies-service/companies"
+                        "/companies-service/companies"
                         )
                 .antMatchers(HttpMethod.PUT,
                         "/users-service/users/activateAccount")

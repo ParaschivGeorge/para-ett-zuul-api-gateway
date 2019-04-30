@@ -116,7 +116,41 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                     }
                                 }
                             } else if (request.getMethod().equals(HttpMethod.GET.name())) {
-                                if (request.getRequestURI().length() != uri.length()) {
+                                if (request.getRequestURI().length() == uri.length()) {
+                                    String companyId = request.getParameter("companyId");
+                                    if (companyId != null) {
+                                        if (Long.valueOf(companyId) != user.getCompanyId()) {
+                                            throw new AuthenticationException("This is not your company");
+                                        }
+                                    } else {
+                                        throw new AuthenticationException("You must provide a company id");
+                                    }
+                                }
+                            }
+                        }
+
+                        uri = "/requests-service/requests";
+
+                        if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                            if (request.getMethod().equals(HttpMethod.GET.name()) || request.getMethod().equals(HttpMethod.DELETE.name())) {
+                                if (request.getRequestURI().length() == uri.length()) {
+                                    String companyId = request.getParameter("companyId");
+                                    if (companyId != null) {
+                                        if (Long.valueOf(companyId) != user.getCompanyId()) {
+                                            throw new AuthenticationException("This is not your company");
+                                        }
+                                    } else {
+                                        throw new AuthenticationException("You must provide a company id");
+                                    }
+                                }
+                            }
+                        }
+
+                        uri = "/timesheet-records-service/timesheet-records";
+
+                        if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                            if (request.getMethod().equals(HttpMethod.GET.name()) || request.getMethod().equals(HttpMethod.DELETE.name())) {
+                                if (request.getRequestURI().length() == uri.length()) {
                                     String companyId = request.getParameter("companyId");
                                     if (companyId != null) {
                                         if (Long.valueOf(companyId) != user.getCompanyId()) {
