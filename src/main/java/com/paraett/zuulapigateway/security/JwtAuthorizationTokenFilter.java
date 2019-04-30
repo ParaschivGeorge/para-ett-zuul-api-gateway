@@ -1,8 +1,10 @@
 package com.paraett.zuulapigateway.security;
 
 import com.paraett.zuulapigateway.exception.AuthenticationException;
+import com.paraett.zuulapigateway.model.entities.Project;
 import com.paraett.zuulapigateway.model.entities.User;
 import com.paraett.zuulapigateway.model.enums.UserType;
+import com.paraett.zuulapigateway.repository.ProjectRepository;
 import com.paraett.zuulapigateway.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.slf4j.Logger;
@@ -32,12 +34,14 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
     private JwtTokenUtil jwtTokenUtil;
     private String tokenHeader;
     private UserRepository userRepository;
+    private ProjectRepository projectRepository;
 
-    public JwtAuthorizationTokenFilter(UserDetailsService userDetailsService, JwtTokenUtil jwtTokenUtil, String tokenHeader, UserRepository userRepository) {
+    public JwtAuthorizationTokenFilter(UserDetailsService userDetailsService, JwtTokenUtil jwtTokenUtil, String tokenHeader, UserRepository userRepository, ProjectRepository projectRepository) {
         this.userDetailsService = userDetailsService;
         this.jwtTokenUtil = jwtTokenUtil;
         this.tokenHeader = tokenHeader;
         this.userRepository = userRepository;
+        this.projectRepository = projectRepository;
     }
 
     @Override
@@ -92,7 +96,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                             if (companyId == null) {
                                 throw new AuthenticationException("You must provide a company id");
                             } else {
-                                if (user.getCompanyId() != companyId) {
+                                if (!user.getCompanyId().equals(companyId)) {
                                     throw new AuthenticationException("This is not your company");
                                 } else if (request.getMethod().equals(HttpMethod.PUT.name()) || request.getMethod().equals(HttpMethod.DELETE.name())) {
                                     if (user.getType() != UserType.OWNER) {
@@ -111,7 +115,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                 }
                                 String companyId = request.getParameter("companyId");
                                 if (companyId != null) {
-                                    if (Long.valueOf(companyId) != user.getCompanyId()) {
+                                    if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
                                         throw new AuthenticationException("This is not your company");
                                     }
                                 }
@@ -119,7 +123,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                 if (request.getRequestURI().length() == uri.length()) {
                                     String companyId = request.getParameter("companyId");
                                     if (companyId != null) {
-                                        if (Long.valueOf(companyId) != user.getCompanyId()) {
+                                        if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
                                             throw new AuthenticationException("This is not your company");
                                         }
                                     } else {
@@ -136,7 +140,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                 if (request.getRequestURI().length() == uri.length()) {
                                     String companyId = request.getParameter("companyId");
                                     if (companyId != null) {
-                                        if (Long.valueOf(companyId) != user.getCompanyId()) {
+                                        if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
                                             throw new AuthenticationException("This is not your company");
                                         }
                                     } else {
@@ -153,7 +157,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                 if (request.getRequestURI().length() == uri.length()) {
                                     String companyId = request.getParameter("companyId");
                                     if (companyId != null) {
-                                        if (Long.valueOf(companyId) != user.getCompanyId()) {
+                                        if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
                                             throw new AuthenticationException("This is not your company");
                                         }
                                     } else {
@@ -170,11 +174,16 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                             if (request.getRequestURI().length() == uri.length()) {
                                 String companyId = request.getParameter("companyId");
                                 if (companyId != null) {
-                                    if (Long.valueOf(companyId) != user.getCompanyId()) {
+                                    if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
                                         throw new AuthenticationException("This is not your company");
                                     }
                                 } else {
                                     throw new AuthenticationException("You must provide a company id");
+                                }
+                                if (request.getMethod().equals(HttpMethod.DELETE.name())) {
+                                    if (user.getType() != UserType.OWNER) {
+                                        throw new AuthenticationException("Only the company owner can do this");
+                                    }
                                 }
                             } else {
                                 Long userId = null;
@@ -187,22 +196,72 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                 } else {
                                     User requestUser = userRepository.findById(userId).get();
                                     if (request.getMethod().equals(HttpMethod.GET.name())) {
-                                        if (user.getCompanyId() != requestUser.getCompanyId()) {
+                                        if (!user.getCompanyId().equals(requestUser.getCompanyId())) {
                                             throw new AuthenticationException("This user is not part of your company");
                                         }
                                     } else if (request.getMethod().equals(HttpMethod.DELETE.name())) {
-                                        if (user.getCompanyId() != requestUser.getCompanyId() || user.getType() != UserType.OWNER) {
+                                        if (!user.getCompanyId().equals(requestUser.getCompanyId()) || user.getType() != UserType.OWNER) {
                                             throw new AuthenticationException("Only the company owner can delete an employee");
                                         }
                                     } else if (request.getMethod().equals(HttpMethod.PUT.name())) {
-                                        if (user.getId() != userId) {
+                                        if (!user.getId().equals(userId)) {
                                             throw new AuthenticationException("Only the user can edit his profile");
                                         }
                                     }
                                 }
                             }
 
+                            uri = "/users-service/projects";
 
+                            if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                                if (request.getRequestURI().length() == uri.length()) {
+                                    // POST
+                                    if (request.getMethod().equals(HttpMethod.POST.name())) {
+                                        if (user.getType() != UserType.OWNER) {
+                                            throw new AuthenticationException("Only the company owner can add projects");
+                                        }
+                                    } else {
+                                        // GET and DELETE without ID
+                                        String companyId = request.getParameter("companyId");
+                                        if (companyId != null) {
+                                            if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
+                                                throw new AuthenticationException("This is not your company");
+                                            }
+                                        } else {
+                                            throw new AuthenticationException("You must provide a company id");
+                                        }
+                                        if (request.getMethod().equals(HttpMethod.DELETE.name())) {
+                                            if (user.getType() != UserType.OWNER) {
+                                                throw new AuthenticationException("Only the company owner can do this");
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    Long projectId = null;
+                                    if (request.getRequestURI().length() > uri.length()) {
+                                        projectId = Long.valueOf(request.getRequestURI().substring(uri.length() + 1));
+                                    }
+
+                                    if (projectId == null) {
+                                        throw new AuthenticationException("You must provide a project id");
+                                    } else {
+                                        Project project = projectRepository.findById(projectId).get();
+                                        if (request.getMethod().equals(HttpMethod.GET.name())) {
+                                            if (!user.getCompanyId().equals(project.getCompanyId())) {
+                                                throw new AuthenticationException("This project is not from your company");
+                                            }
+                                        } else if (request.getMethod().equals(HttpMethod.DELETE.name())) {
+                                            if (user.getType() != UserType.OWNER || !project.getCompanyId().equals(user.getCompanyId())) {
+                                                throw new AuthenticationException("Only the company owner can delete the project");
+                                            }
+                                        } else if (request.getMethod().equals(HttpMethod.PUT.name())) {
+                                            if ((!user.getId().equals(project.getResponsibleId())) && ((user.getType() != UserType.OWNER || !project.getCompanyId().equals(user.getCompanyId())))) {
+                                                throw new AuthenticationException("Only the company owner and project responsible can update the project");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -211,7 +270,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                     logger.info("authorizated user '{}', setting security context", username);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } catch (NoSuchElementException e) {
-                    logger.error("invalid username/email/userId", e);
+                    logger.error("invalid username/email/userId/projectId", e);
                 } catch (AuthenticationException e) {
                     logger.error("error while checking authorization", e);
                 } catch (Exception e) {

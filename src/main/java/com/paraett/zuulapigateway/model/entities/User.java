@@ -5,6 +5,7 @@ import com.paraett.zuulapigateway.model.enums.UserType;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Set;
 
 @Entity
 @Table(name = "user_tbl")
@@ -57,16 +58,11 @@ public class User {
     @Column
     private Integer norm;
 
-    public Integer getFreeDaysLeft() {
-        return freeDaysLeft;
-    }
-
-    public void setFreeDaysLeft(Integer freeDaysLeft) {
-        this.freeDaysLeft = freeDaysLeft;
-    }
-
     @Column
     private Integer freeDaysLeft;
+
+    @ManyToMany
+    private Set<Project> projects;
 
     public Long getId() {
         return id;
@@ -170,6 +166,22 @@ public class User {
 
     public void setNorm(Integer norm) {
         this.norm = norm;
+    }
+
+    public Integer getFreeDaysLeft() {
+        return freeDaysLeft;
+    }
+
+    public void setFreeDaysLeft(Integer freeDaysLeft) {
+        this.freeDaysLeft = freeDaysLeft;
+    }
+
+    public Set<Project> getProjects() {
+        return projects;
+    }
+
+    public void setProjects(Set<Project> projects) {
+        this.projects = projects;
     }
 
     public User() {

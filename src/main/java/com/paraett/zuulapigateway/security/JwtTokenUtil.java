@@ -30,13 +30,10 @@ public class JwtTokenUtil implements Serializable {
     private Clock clock = DefaultClock.INSTANCE;
 
     public String getUsernameFromToken(String token) throws IOException {
-        // TODO: refactor this
         ObjectMapper mapper = new ObjectMapper();
         String subject = getClaimFromToken(token, Claims::getSubject);
         JwtUser userDetails = mapper.readValue(subject, JwtUser.class);
         return userDetails.getUsername();
-
-//        return getClaimFromToken(token, Claims::getSubject);
     }
 
     public Date getIssuedAtDateFromToken(String token) {
