@@ -101,6 +101,34 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                 }
                             }
                         }
+
+                        uri = "/free-days-service/free-days";
+
+                        if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                            if (request.getMethod().equals(HttpMethod.POST.name()) || request.getMethod().equals(HttpMethod.PUT.name()) || request.getMethod().equals(HttpMethod.DELETE.name())) {
+                                if (user.getType() != UserType.OWNER) {
+                                    throw new AuthenticationException("Only the owner can add/mofidy/delete free days");
+                                }
+                                String companyId = request.getParameter("companyId");
+                                if (companyId != null) {
+                                    if (Long.valueOf(companyId) != user.getCompanyId()) {
+                                        throw new AuthenticationException("This is not your company");
+                                    }
+                                }
+                            } else if (request.getMethod().equals(HttpMethod.GET.name())) {
+                                if (request.getRequestURI().length() != uri.length()) {
+                                    String companyId = request.getParameter("companyId");
+                                    if (companyId != null) {
+                                        if (Long.valueOf(companyId) != user.getCompanyId()) {
+                                            throw new AuthenticationException("This is not your company");
+                                        }
+                                    } else {
+                                        throw new AuthenticationException("You must provide a company id");
+                                    }
+                                }
+                            }
+                        }
+
                     }
 
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
