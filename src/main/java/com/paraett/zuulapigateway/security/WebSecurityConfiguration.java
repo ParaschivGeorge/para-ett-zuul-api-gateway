@@ -1,6 +1,7 @@
 package com.paraett.zuulapigateway.security;
 
 import com.paraett.zuulapigateway.model.enums.UserType;
+import com.paraett.zuulapigateway.repository.UserRepository;
 import com.paraett.zuulapigateway.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -29,11 +30,13 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private JwtAuthenticationEntryPoint unauthorizedHandler;
     private JwtTokenUtil jwtTokenUtil;
     private JwtUserDetailsService jwtUserDetailsService;
+    private UserRepository userRepository;
 
-    public WebSecurityConfiguration(JwtAuthenticationEntryPoint unauthorizedHandler, JwtTokenUtil jwtTokenUtil, JwtUserDetailsService jwtUserDetailsService) {
+    public WebSecurityConfiguration(JwtAuthenticationEntryPoint unauthorizedHandler, JwtTokenUtil jwtTokenUtil, JwtUserDetailsService jwtUserDetailsService, UserRepository userRepository) {
         this.unauthorizedHandler = unauthorizedHandler;
         this.jwtTokenUtil = jwtTokenUtil;
         this.jwtUserDetailsService = jwtUserDetailsService;
+        this.userRepository = userRepository;
     }
 
     static private final String tokenHeader = "PARA-ETT-ID";
@@ -84,7 +87,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .logout().permitAll();
 
         // Custom JWT based security filter
-        JwtAuthorizationTokenFilter authenticationTokenFilter = new JwtAuthorizationTokenFilter(userDetailsService(), jwtTokenUtil, tokenHeader);
+        JwtAuthorizationTokenFilter authenticationTokenFilter = new JwtAuthorizationTokenFilter(userDetailsService(), jwtTokenUtil, tokenHeader, userRepository);
         http
                 .addFilterBefore(authenticationTokenFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -103,7 +106,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,
                         "/login",
                         "/users-service/users/massRegister",
-                        "/users-service/users/registerOwner"
+                        "/users-service/users/registerOwner",
+                        "companies-service/companies"
                         )
                 .antMatchers(HttpMethod.PUT,
                         "/users-service/users/activateAccount")
