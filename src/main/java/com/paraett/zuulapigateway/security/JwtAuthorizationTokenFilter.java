@@ -163,6 +163,47 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                             }
                         }
 
+                        uri = "/users-service/users";
+
+                        if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                            // GET and DELETE without ID
+                            if (request.getRequestURI().length() == uri.length()) {
+                                String companyId = request.getParameter("companyId");
+                                if (companyId != null) {
+                                    if (Long.valueOf(companyId) != user.getCompanyId()) {
+                                        throw new AuthenticationException("This is not your company");
+                                    }
+                                } else {
+                                    throw new AuthenticationException("You must provide a company id");
+                                }
+                            } else {
+                                Long userId = null;
+                                if (request.getRequestURI().length() > uri.length()) {
+                                    userId = Long.valueOf(request.getRequestURI().substring(uri.length() + 1));
+                                }
+
+                                if (userId == null) {
+                                    throw new AuthenticationException("You must provide an user id");
+                                } else {
+                                    User requestUser = userRepository.findById(userId).get();
+                                    if (request.getMethod().equals(HttpMethod.GET.name())) {
+                                        if (user.getCompanyId() != requestUser.getCompanyId()) {
+                                            throw new AuthenticationException("This user is not part of your company");
+                                        }
+                                    } else if (request.getMethod().equals(HttpMethod.DELETE.name())) {
+                                        if (user.getCompanyId() != requestUser.getCompanyId() || user.getType() != UserType.OWNER) {
+                                            throw new AuthenticationException("Only the company owner can delete an employee");
+                                        }
+                                    } else if (request.getMethod().equals(HttpMethod.PUT.name())) {
+                                        if (user.getId() != userId) {
+                                            throw new AuthenticationException("Only the user can edit his profile");
+                                        }
+                                    }
+                                }
+                            }
+
+
+                        }
                     }
 
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -170,7 +211,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                     logger.info("authorizated user '{}', setting security context", username);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } catch (NoSuchElementException e) {
-                    logger.error("invalid username email", e);
+                    logger.error("invalid username/email/userId", e);
                 } catch (AuthenticationException e) {
                     logger.error("error while checking authorization", e);
                 } catch (Exception e) {
