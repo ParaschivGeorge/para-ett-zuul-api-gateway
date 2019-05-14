@@ -25,7 +25,7 @@ public class JwtTokenUtil implements Serializable {
     static final String CLAIM_KEY_USERNAME = "sub";
     static final String CLAIM_KEY_CREATED = "iat";
     static final private String secret = "para-ett-secret-ae90544e-bc19-4e96-bcb6-bc435a3a05f7";
-    static final private Long expiration = 60L; // minutes
+    static final private Long expiration = 8 * 60L; // minutes
     private static final long serialVersionUID = -3301605591108950415L;
     private Clock clock = DefaultClock.INSTANCE;
 

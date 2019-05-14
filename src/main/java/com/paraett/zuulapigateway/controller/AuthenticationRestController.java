@@ -50,8 +50,8 @@ public class AuthenticationRestController {
         return ResponseEntity.ok(new JwtAuthenticationResponse(token));
     }
 
-    @GetMapping("/refresh")
-    public ResponseEntity<?> refreshAndGetAuthenticationToken(HttpServletRequest request) throws IOException {
+//    @GetMapping("/refresh")
+    public ResponseEntity<?>refreshAndGetAuthenticationToken(HttpServletRequest request) throws IOException {
         String authToken = request.getHeader(tokenHeader);
         final String token = authToken.substring(7);
         String username = jwtTokenUtil.getUsernameFromToken(token);
