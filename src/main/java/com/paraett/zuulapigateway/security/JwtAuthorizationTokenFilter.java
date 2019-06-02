@@ -86,7 +86,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
 
                         String uri = "/companies-service/companies";
 
-                        if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                        if (request.getRequestURI().length() >= uri.length() && request.getRequestURI().substring(0, uri.length()).equals(uri)) {
 
                             Long companyId = null;
                             if (request.getRequestURI().length() > uri.length()) {
@@ -108,7 +108,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
 
                         uri = "/free-days-service/free-days";
 
-                        if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                        if (request.getRequestURI().length() >= uri.length() && request.getRequestURI().substring(0, uri.length()).equals(uri)) {
                             if (request.getMethod().equals(HttpMethod.POST.name()) || request.getMethod().equals(HttpMethod.PUT.name()) || request.getMethod().equals(HttpMethod.DELETE.name())) {
                                 if (user.getType() != UserType.OWNER) {
                                     throw new AuthenticationException("Only the owner can add/mofidy/delete free days");
@@ -135,7 +135,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
 
                         uri = "/requests-service/requests";
 
-                        if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                        if (request.getRequestURI().length() >= uri.length() && request.getRequestURI().substring(0, uri.length()).equals(uri)) {
                             if (request.getMethod().equals(HttpMethod.GET.name()) || request.getMethod().equals(HttpMethod.DELETE.name())) {
                                 if (request.getRequestURI().length() == uri.length()) {
                                     String companyId = request.getParameter("companyId");
@@ -152,7 +152,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
 
                         uri = "/timesheet-records-service/timesheet-records";
 
-                        if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                        if (request.getRequestURI().length() >= uri.length() && request.getRequestURI().substring(0, uri.length()).equals(uri)) {
                             if (request.getMethod().equals(HttpMethod.GET.name()) || request.getMethod().equals(HttpMethod.DELETE.name())) {
                                 if (request.getRequestURI().length() == uri.length()) {
                                     String companyId = request.getParameter("companyId");
@@ -169,7 +169,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
 
                         uri = "/users-service/users";
 
-                        if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                        if (request.getRequestURI().length() >= uri.length() && request.getRequestURI().substring(0, uri.length()).equals(uri)) {
                             // GET and DELETE without ID
                             if (request.getRequestURI().length() == uri.length()) {
                                 String companyId = request.getParameter("companyId");
@@ -185,7 +185,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                         throw new AuthenticationException("Only the company owner can do this");
                                     }
                                 }
-                            } else {
+                            } else if (!request.getRequestURI().contains("/email")) {
                                 Long userId = null;
                                 if (request.getRequestURI().length() > uri.length()) {
                                     userId = Long.valueOf(request.getRequestURI().substring(uri.length() + 1));
@@ -213,7 +213,7 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
 
                             uri = "/users-service/projects";
 
-                            if (request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                            if (request.getRequestURI().length() >= uri.length() && request.getRequestURI().substring(0, uri.length()).equals(uri)) {
                                 if (request.getRequestURI().length() == uri.length()) {
                                     // POST
                                     if (request.getMethod().equals(HttpMethod.POST.name())) {
