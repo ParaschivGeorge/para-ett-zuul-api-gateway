@@ -1,6 +1,7 @@
 package com.paraett.zuulapigateway.security;
 
 import com.paraett.zuulapigateway.exception.AuthenticationException;
+import com.paraett.zuulapigateway.exception.ForbiddenException;
 import com.paraett.zuulapigateway.model.entities.Project;
 import com.paraett.zuulapigateway.model.entities.User;
 import com.paraett.zuulapigateway.model.enums.UserType;
@@ -94,13 +95,13 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                             }
 
                             if (companyId == null) {
-                                throw new AuthenticationException("You must provide a company id");
+                                throw new ForbiddenException("You must provide a company id");
                             } else {
                                 if (!user.getCompanyId().equals(companyId)) {
-                                    throw new AuthenticationException("This is not your company");
+                                    throw new ForbiddenException("This is not your company");
                                 } else if (request.getMethod().equals(HttpMethod.PUT.name()) || request.getMethod().equals(HttpMethod.DELETE.name())) {
                                     if (user.getType() != UserType.OWNER) {
-                                        throw new AuthenticationException("Only the owner can modify/delete the company");
+                                        throw new ForbiddenException("Only the owner can modify/delete the company");
                                     }
                                 }
                             }
@@ -111,12 +112,12 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                         if (request.getRequestURI().length() >= uri.length() && request.getRequestURI().substring(0, uri.length()).equals(uri)) {
                             if (request.getMethod().equals(HttpMethod.POST.name()) || request.getMethod().equals(HttpMethod.PUT.name()) || request.getMethod().equals(HttpMethod.DELETE.name())) {
                                 if (user.getType() != UserType.OWNER) {
-                                    throw new AuthenticationException("Only the owner can add/mofidy/delete free days");
+                                    throw new ForbiddenException("Only the owner can add/mofidy/delete free days");
                                 }
                                 String companyId = request.getParameter("companyId");
                                 if (companyId != null) {
                                     if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
-                                        throw new AuthenticationException("This is not your company");
+                                        throw new ForbiddenException("This is not your company");
                                     }
                                 }
                             } else if (request.getMethod().equals(HttpMethod.GET.name())) {
@@ -124,10 +125,10 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                     String companyId = request.getParameter("companyId");
                                     if (companyId != null) {
                                         if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
-                                            throw new AuthenticationException("This is not your company");
+                                            throw new ForbiddenException("This is not your company");
                                         }
                                     } else {
-                                        throw new AuthenticationException("You must provide a company id");
+                                        throw new ForbiddenException("You must provide a company id");
                                     }
                                 }
                             }
@@ -141,10 +142,10 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                     String companyId = request.getParameter("companyId");
                                     if (companyId != null) {
                                         if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
-                                            throw new AuthenticationException("This is not your company");
+                                            throw new ForbiddenException("This is not your company");
                                         }
                                     } else {
-                                        throw new AuthenticationException("You must provide a company id");
+                                        throw new ForbiddenException("You must provide a company id");
                                     }
                                 }
                             }
@@ -158,10 +159,10 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                     String companyId = request.getParameter("companyId");
                                     if (companyId != null) {
                                         if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
-                                            throw new AuthenticationException("This is not your company");
+                                            throw new ForbiddenException("This is not your company");
                                         }
                                     } else {
-                                        throw new AuthenticationException("You must provide a company id");
+                                        throw new ForbiddenException("You must provide a company id");
                                     }
                                 }
                             }
@@ -175,14 +176,14 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                 String companyId = request.getParameter("companyId");
                                 if (companyId != null) {
                                     if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
-                                        throw new AuthenticationException("This is not your company");
+                                        throw new ForbiddenException("This is not your company");
                                     }
                                 } else {
-                                    throw new AuthenticationException("You must provide a company id");
+                                    throw new ForbiddenException("You must provide a company id");
                                 }
                                 if (request.getMethod().equals(HttpMethod.DELETE.name())) {
                                     if (user.getType() != UserType.OWNER) {
-                                        throw new AuthenticationException("Only the company owner can do this");
+                                        throw new ForbiddenException("Only the company owner can do this");
                                     }
                                 }
                             } else if (!request.getRequestURI().contains("/email")) {
@@ -192,72 +193,72 @@ public class JwtAuthorizationTokenFilter extends OncePerRequestFilter {
                                 }
 
                                 if (userId == null) {
-                                    throw new AuthenticationException("You must provide an user id");
+                                    throw new ForbiddenException("You must provide an user id");
                                 } else {
                                     User requestUser = userRepository.findById(userId).get();
                                     if (request.getMethod().equals(HttpMethod.GET.name())) {
                                         if (!user.getCompanyId().equals(requestUser.getCompanyId())) {
-                                            throw new AuthenticationException("This user is not part of your company");
+                                            throw new ForbiddenException("This user is not part of your company");
                                         }
                                     } else if (request.getMethod().equals(HttpMethod.DELETE.name())) {
                                         if (!user.getCompanyId().equals(requestUser.getCompanyId()) || user.getType() != UserType.OWNER) {
-                                            throw new AuthenticationException("Only the company owner can delete an employee");
+                                            throw new ForbiddenException("Only the company owner can delete an employee");
                                         }
                                     } else if (request.getMethod().equals(HttpMethod.PUT.name())) {
-                                        if (!user.getId().equals(userId)) {
-                                            throw new AuthenticationException("Only the user can edit his profile");
+                                        if (!user.getCompanyId().equals(requestUser.getCompanyId())) {
+                                            throw new ForbiddenException("This is not your company");
                                         }
                                     }
                                 }
                             }
+                        }
 
-                            uri = "/users-service/projects";
+                        uri = "/users-service/projects";
 
-                            if (request.getRequestURI().length() >= uri.length() && request.getRequestURI().substring(0, uri.length()).equals(uri)) {
-                                if (request.getRequestURI().length() == uri.length()) {
-                                    // POST
-                                    if (request.getMethod().equals(HttpMethod.POST.name())) {
-                                        if (user.getType() != UserType.OWNER) {
-                                            throw new AuthenticationException("Only the company owner can add projects");
-                                        }
-                                    } else {
-                                        // GET and DELETE without ID
-                                        String companyId = request.getParameter("companyId");
-                                        if (companyId != null) {
-                                            if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
-                                                throw new AuthenticationException("This is not your company");
-                                            }
-                                        } else {
-                                            throw new AuthenticationException("You must provide a company id");
-                                        }
-                                        if (request.getMethod().equals(HttpMethod.DELETE.name())) {
-                                            if (user.getType() != UserType.OWNER) {
-                                                throw new AuthenticationException("Only the company owner can do this");
-                                            }
-                                        }
+                        if (request.getRequestURI().length() >= uri.length() && request.getRequestURI().substring(0, uri.length()).equals(uri)) {
+                            if (request.getRequestURI().length() == uri.length()) {
+                                // POST
+                                if (request.getMethod().equals(HttpMethod.POST.name())) {
+                                    if (user.getType() != UserType.OWNER) {
+                                        throw new ForbiddenException("Only the company owner can add projects");
                                     }
                                 } else {
-                                    Long projectId = null;
-                                    if (request.getRequestURI().length() > uri.length()) {
-                                        projectId = Long.valueOf(request.getRequestURI().substring(uri.length() + 1));
-                                    }
-
-                                    if (projectId == null) {
-                                        throw new AuthenticationException("You must provide a project id");
+                                    // GET and DELETE without ID
+                                    String companyId = request.getParameter("companyId");
+                                    if (companyId != null) {
+                                        if (!Long.valueOf(companyId).equals(user.getCompanyId())) {
+                                            throw new ForbiddenException("This is not your company");
+                                        }
                                     } else {
-                                        Project project = projectRepository.findById(projectId).get();
-                                        if (request.getMethod().equals(HttpMethod.GET.name())) {
-                                            if (!user.getCompanyId().equals(project.getCompanyId())) {
-                                                throw new AuthenticationException("This project is not from your company");
-                                            }
-                                        } else if (request.getMethod().equals(HttpMethod.DELETE.name())) {
-                                            if (user.getType() != UserType.OWNER || !project.getCompanyId().equals(user.getCompanyId())) {
-                                                throw new AuthenticationException("Only the company owner can delete the project");
-                                            }
-                                        } else if (request.getMethod().equals(HttpMethod.PUT.name())) {
-                                            if ((!user.getId().equals(project.getResponsibleId())) && ((user.getType() != UserType.OWNER || !project.getCompanyId().equals(user.getCompanyId())))) {
-                                                throw new AuthenticationException("Only the company owner and project responsible can update the project");
-                                            }
+                                        throw new ForbiddenException("You must provide a company id");
+                                    }
+                                    if (request.getMethod().equals(HttpMethod.DELETE.name())) {
+                                        if (user.getType() != UserType.OWNER) {
+                                            throw new ForbiddenException("Only the company owner can do this");
+                                        }
+                                    }
+                                }
+                            } else {
+                                Long projectId = null;
+                                if (request.getRequestURI().length() > uri.length()) {
+                                    projectId = Long.valueOf(request.getRequestURI().substring(uri.length() + 1));
+                                }
+
+                                if (projectId == null) {
+                                    throw new ForbiddenException("You must provide a project id");
+                                } else {
+                                    Project project = projectRepository.findById(projectId).get();
+                                    if (request.getMethod().equals(HttpMethod.GET.name())) {
+                                        if (!user.getCompanyId().equals(project.getCompanyId())) {
+                                            throw new ForbiddenException("This project is not from your company");
+                                        }
+                                    } else if (request.getMethod().equals(HttpMethod.DELETE.name())) {
+                                        if (user.getType() != UserType.OWNER || !project.getCompanyId().equals(user.getCompanyId())) {
+                                            throw new ForbiddenException("Only the company owner can delete the project");
+                                        }
+                                    } else if (request.getMethod().equals(HttpMethod.PUT.name())) {
+                                        if ((!user.getId().equals(project.getResponsibleId())) && ((user.getType() != UserType.OWNER || !project.getCompanyId().equals(user.getCompanyId())))) {
+                                            throw new ForbiddenException("Only the company owner and project responsible can update the project");
                                         }
                                     }
                                 }
