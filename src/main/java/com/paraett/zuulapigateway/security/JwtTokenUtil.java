@@ -27,6 +27,7 @@ public class JwtTokenUtil implements Serializable {
     static final private String secret = "para-ett-secret-ae90544e-bc19-4e96-bcb6-bc435a3a05f7";
     static final private Long expiration = 8 * 60L; // minutes
     private static final long serialVersionUID = -3301605591108950415L;
+    public static final String PARA_ETT_GATEWAY = "PARA-ETT-GATEWAY";
     private Clock clock = DefaultClock.INSTANCE;
 
     public String getUsernameFromToken(String token) throws IOException {
@@ -38,6 +39,10 @@ public class JwtTokenUtil implements Serializable {
 
     public Date getIssuedAtDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getIssuedAt);
+    }
+
+    public Date getNotBeforeDateFromToken(String token) {
+        return getClaimFromToken(token, Claims::getNotBefore);
     }
 
     public Date getExpirationDateFromToken(String token) {
@@ -86,6 +91,8 @@ public class JwtTokenUtil implements Serializable {
                 .setSubject(subject)
                 .setIssuedAt(createdDate)
                 .setExpiration(expirationDate)
+                .setIssuer(PARA_ETT_GATEWAY)
+                .setNotBefore(createdDate)
                 .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
     }
@@ -103,6 +110,7 @@ public class JwtTokenUtil implements Serializable {
         final Claims claims = getAllClaimsFromToken(token);
         claims.setIssuedAt(createdDate);
         claims.setExpiration(expirationDate);
+        claims.setNotBefore(createdDate);
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -113,13 +121,21 @@ public class JwtTokenUtil implements Serializable {
     public Boolean validateToken(String token, UserDetails userDetails) throws IOException {
         JwtUser user = (JwtUser) userDetails;
         final String username = getUsernameFromToken(token);
+        final String issuer = getIssuerFromToken(token);
         final Date created = getIssuedAtDateFromToken(token);
         final Date expiration = getExpirationDateFromToken(token);
+        final Date now = clock.now();
         return (
                 username.equals(user.getUsername())
                         && !isTokenExpired(token)
                         && !isCreatedBeforeLastPasswordReset(created, user.getLastPasswordResetDate())
+                        && issuer.equals(PARA_ETT_GATEWAY)
+                        && getNotBeforeDateFromToken(token).before(now)
         );
+    }
+
+    private String getIssuerFromToken(String token) {
+        return getClaimFromToken(token, Claims::getIssuer);
     }
 
     private Date calculateExpirationDate(Date createdDate) {
